@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import defaultTheme from 'tailwindcss/defaultTheme';
+import defaultTheme from 'tailwindcss/defaultTheme.js'
 import tailwindcssAnimate from 'tailwindcss-animate';
 
 export const texts = {
