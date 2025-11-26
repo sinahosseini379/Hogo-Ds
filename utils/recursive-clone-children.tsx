@@ -12,13 +12,13 @@ import * as React from 'react';
  *
  * @returns The cloned node(s) with the additional props applied to the matched components.
  */
-export function recursiveCloneChildren(
+export function recursiveCloneChildren<T extends Record<string, unknown> = Record<string, unknown>>(
   children: React.ReactNode,
-  additionalProps: any,
+  additionalProps: T,
   displayNames: string[],
   uniqueId: string,
   asChild?: boolean,
-): React.ReactNode | React.ReactNode[] {
+): React.ReactNode | React.ReactNode[] | null {
   const mappedChildren = React.Children.map(
     children,
     (child: React.ReactNode, index) => {
@@ -29,16 +29,21 @@ export function recursiveCloneChildren(
       const displayName =
         (child.type as React.ComponentType)?.displayName || '';
       const newProps = displayNames.includes(displayName)
-        ? additionalProps
+        ? (additionalProps as unknown as Record<string, unknown>)
         : {};
 
-      const childProps = (child as React.ReactElement<any>).props;
+      type ChildProps = {
+        children?: React.ReactNode;
+        asChild?: boolean;
+      } & Record<string, unknown>;
+
+      const childProps = (child as React.ReactElement<ChildProps>).props;
 
       return React.cloneElement(
         child,
         { ...newProps, key: `${uniqueId}-${index}` },
         recursiveCloneChildren(
-          childProps?.children,
+          childProps?.children ?? null,
           additionalProps,
           displayNames,
           uniqueId,
@@ -48,5 +53,9 @@ export function recursiveCloneChildren(
     },
   );
 
-  return asChild ? mappedChildren?.[0] : mappedChildren;
+  if (asChild) {
+    return mappedChildren?.[0] ?? null;
+  }
+
+  return mappedChildren ?? null;
 }

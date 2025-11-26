@@ -84,13 +84,21 @@ function FileFormatIcon({
         className='stroke-stroke-sub-300'
         strokeWidth='1.5'
       />
-      <foreignObject x='0' y='0' width='40' height='40'>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        <div xmlns='http://www.w3.org/1999/xhtml' className={formatBox()}>
+      {/* Use an SVG-native fallback instead of embedding HTML to avoid ts-ignore */}
+      <g>
+        <rect
+          x='4'
+          y='28'
+          rx='4'
+          ry='4'
+          width='32'
+          height='8'
+          className={formatBox()}
+        />
+        <text x='8' y='34.5' fontSize='11' fontWeight='600' fill='white'>
           {format}
-        </div>
-      </foreignObject>
+        </text>
+      </g>
     </svg>
   );
 }

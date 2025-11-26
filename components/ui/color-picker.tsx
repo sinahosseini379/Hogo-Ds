@@ -137,27 +137,37 @@ const EyeDropperButton = React.forwardRef<
   HTMLButtonElement,
   React.HTMLAttributes<HTMLButtonElement>
 >(({ ...rest }, forwardedRef) => {
-  const state = React.useContext(ColorPickerStateContext)!;
+  const state = React.useContext(ColorPickerStateContext);
 
-  // eslint-disable-next-line
-  // @ts-ignore
-  if (typeof EyeDropper === 'undefined') {
+  if (!state) return null;
+
+  // Access EyeDropper from global in a typed, safe way
+  const EyeDropperAPI = (globalThis as any).EyeDropper as
+    | { new (): { open: () => Promise<{ sRGBHex: string }> } }
+    | undefined;
+
+  if (!EyeDropperAPI) {
     return null;
   }
+
+  const handleClick = async () => {
+    try {
+      const picker = new EyeDropperAPI();
+      const result = await picker.open();
+      if (result?.sRGBHex) {
+        state.setColor(parseColor(result.sRGBHex));
+      }
+    } catch (err) {
+      // swallow errors silently or optionally surface a notification
+      // console.error('EyeDropper failed', err);
+    }
+  };
 
   return (
     <button
       ref={forwardedRef}
-      aria-label='Eye dropper'
-      onClick={() => {
-        // eslint-disable-next-line
-        // @ts-ignore
-        new EyeDropper()
-          .open()
-          .then((result: { sRGBHex: string }) =>
-            state.setColor(parseColor(result.sRGBHex)),
-          );
-      }}
+      aria-label="Eye dropper"
+      onClick={handleClick}
       {...rest}
     />
   );
